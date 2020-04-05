@@ -1,0 +1,14 @@
+{
+  "presets": [
+    ["es2015", {"modules": false }],
+    ["env", { "modules": false }],
+    "stage-3"
+  ],
+  "plugins": [
+    ["import", {
+      "libraryName": "vant",
+      "libraryDirectory": "es",
+      "style": true
+    }]
+  ]
+}
