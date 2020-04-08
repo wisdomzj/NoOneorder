@@ -37,10 +37,7 @@ app.use(error({
 }))
 
 // 跨域
-app.use(cors({
-    origin: ['http://localhost:9528'],
-    credentials: true
-}))
+app.use(cors())
 
 // 接受post参数
 app.use(koabody({

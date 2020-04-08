@@ -1,23 +1,23 @@
 const CATE_API = {
   cateFindAll: {
     method: 'get',
-    url: '/cate/findAllnotPaging'
+    url: '/category/findAllnotPaging'
   },
   addcate: {
     method: 'post',
-    url: '/cate/add'
+    url: '/category/add'
   },
   delcate: {
     method: 'get',
-    url: '/cate/remove'
+    url: '/category/remove'
   },
   showcate: {
     method: 'get',
-    url: '/cate/show'
+    url: '/category/show'
   },
   editcate: {
     method: 'post',
-    url: '/cate/edit'
+    url: '/category/edit'
   }
 }
 

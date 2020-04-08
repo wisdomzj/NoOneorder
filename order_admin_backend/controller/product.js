@@ -29,10 +29,21 @@ class Product {
         }
     }
 
-    // 查询特定菜品
+    // 查询特定菜品 get传参
     async findById(ctx,next){
         const _id = ctx.request.query.id
         const result = await productModel.findById({ _id }).populate('c_id')
+        
+        ctx.body = {
+            result,
+            code: 20000
+        }
+    }
+
+    // 查询特定菜品 动态路由
+    async showProduct(ctx,next){
+        const _id = ctx.params.id
+        const result = await productModel.findById({ _id })
         
         ctx.body = {
             result,

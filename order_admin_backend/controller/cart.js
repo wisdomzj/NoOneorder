@@ -30,7 +30,7 @@ class Cart {
         desk_id, p_id
       }, {
         $set:{
-          num: (fdNum + 1) > 100 ? 100 : fdNum + 1   
+          num: (fdNum + 1) > 10 ? 10 : fdNum + 1   
         }
       })
     }
@@ -59,6 +59,10 @@ class Cart {
           num: (fdNum - 1) < 0 ? 0 : fdNum - 1  
         }
       })
+
+      if(fdNum === 1){
+        result = await cartModel.remove({desk_id, p_id})
+      }
     }
   
     ctx.body = {

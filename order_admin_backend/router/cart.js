@@ -1,5 +1,5 @@
 const Router = require('koa-router')
-const router = new Router({prefix: '/shopcart'})
+const router = new Router({prefix: '/cart'})
 const { list, add, addcount, reducecount } = require('../controller/cart')
 
 router.get('/list', list)

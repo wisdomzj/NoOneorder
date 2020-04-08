@@ -1,5 +1,5 @@
 <template>
-  <div id="start">
+  <div class="start_box">
     <div class="start_content">
       <header class="start_header">
         <img src="../assets/img/canju.png" /> 用餐人数
@@ -7,131 +7,102 @@
       <p class="notice">请选择正确的用餐人数 ，小二马上给你送餐具</p>
       <div class="content">
         <ul class="user_list">
-          <li v-for="(item,index) in userList" :key="index" :class="{'active':index==0}">						
-              <span>{{item}}人</span>
+          <li
+            v-for="(item, index) in userList"
+            :key="index"
+            :class="{ active: index === 0 }"
+          >
+            <span>{{ item }}人</span>
           </li>
         </ul>
         <div class="mark_input">
-          <input type="text" v-model='note' placeholder="请输入您的口味要求，忌口等（可不填）"/>
+          <input
+            type="text"
+            v-model="note"
+            placeholder="请输入您的口味要求，忌口等（可不填）"
+          />
         </div>
         <ul class="mark_list">
-          <li>						
-              <span>打包带走</span>
+          <li>
+            <span>打包带走</span>
           </li>
           <li>
-              <span>不要放辣椒</span>
+            <span>不要放辣椒</span>
           </li>
           <li>
-              <span>微辣</span>
+            <span>微辣</span>
           </li>
         </ul>
       </div>
     </div>
-    <div class="start" @click="addorderInfo">
+    <div class="start" @click="addInfo">
       <span>开始点菜</span>
     </div>
   </div>
 </template>
 
 <script>
-import Config from "../model/config";
-import Storage from '../model/storage';
 export default {
-  data(){
+  data() {
     return {
-      number:1,
-      note:"",
-      websiteUrl: Config.url,
-      userList:[]
+      number: 1,
+      note: '',
+      userList: [],
     }
   },
-  mounted(){
-    this.requestData()
-    this.login()
-  },
-  methods:{
-    async login() {
-      const res = await this.$Http.login()
-      storage.set('token', res.token)
-      console.log(res)
-    },
-    async requestData() {
-      const res = await this.$Http.getPlayList({
-        start: 0,
-        count: 10
-      })
-      console.log(res)
-    },
-    showuserlist(){
-      for(let i=0;i<12;i++){
-        this.userList.push(i+1);
-      }
-    },
-    addorderInfo(){
-      let api = this.websiteUrl+'api/orderInfo';
-      let deskid = Storage.get("deskid");
-      this.$http.post(api,{
-        desk_id:deskid,                 
-        number:this.number,
-        note:this.note                                       
-      }).then((res)=>{
-        if(res.body.status){
-          this.$router.push({ path: 'home' })
-        }                                        
-      },(err)=>{
-          console.log(err);
-      })
-    },
-    addChangeEnvet(){
-      let that = this;
-      let userLis = document.querySelectorAll('.user_list li');
-      for(let i = 0;i<userLis.length;i++){
-        userLis[i].onclick = function(){
-          for(let j = 0;j<userLis.length;j++){
-            userLis[j].className = " ";
-          }
-          this.className = "active";
-          that.number = parseInt(this.querySelector("span").innerHTML.trim());
-        }
-      }
-      let markLis = document.querySelectorAll('.mark_list li');
-      for(let i = 0;i<markLis.length;i++){
-        markLis[i].onclick = function(){
-          for(let j = 0;j<markLis.length;j++){
-            markLis[j].className = " ";
-          }
-          this.className = "active";
-          that.note = that.note+' '+this.querySelector('span').innerHTML.trim();
-        }
-      }
-    },
-    getorderInfo(){
-      let deskid = Storage.get("deskid");
-      let api = this.websiteUrl+"api/selorderinfo?id="+deskid;
-      this.$http.get(api).then(
-        res => {
-          if(res.body.result){
-            this.$router.push({path:"home"});
-          };
-        },
-        err => {
-          console.log(err);
-        }
-      );
-    }
-  },
-  created(){
-    this.getorderInfo();
-  },
-  mounted(){
-    this.showuserlist();
-    
-    // 等数据渲染加载完成后在去操作doument节点
+  
+  mounted() {
+    this._showuserlist()
     this.$nextTick(function(){
-      this.addChangeEnvet();
+      this._addChangeEnvet()
     })
+  },
+  
+  methods: {
+    addInfo(){
+      const desk_id = 'a12'
+      this.$request.addInfo({ 
+        desk_id,
+        number: parseInt(this.number),
+        mark: this.note,
+        addtime: new Date(),
+        status: 0
+      }).then((res)=>{
+        if(res.result){
+          this.$router.push({ path:'home' })
+        }
+      })
+    },
+    _showuserlist() {
+      for (let i = 0; i < 12; i++) {
+        this.userList.push(i + 1)
+      }
+    },
+    _addChangeEnvet() {
+      let that = this
+      let userlis = document.querySelectorAll('.user_list li')
+      for (let i = 0; i < userlis.length; i++) {
+        userlis[i].onclick = function() {
+          for (let j = 0; j < userlis.length; j++) {
+            userlis[j].className = ''
+          }
+          this.className = 'active'
+          that.number = parseInt(this.querySelector('span').innerHTML.trim())
+        }
+      }
+      let markLis = document.querySelectorAll('.mark_list li')
+      for (let i = 0; i < markLis.length; i++) {
+        markLis[i].onclick = function() {
+          for (let j = 0; j < markLis.length; j++) {
+            markLis[j].className = ''
+          }
+          this.className = 'active'
+          that.note = that.note + " " + this.querySelector("span").innerHTML.trim()
+        }
+      }
+    }
   }
-};
+}
 </script>
 
 <style lang="scss">
@@ -157,23 +128,24 @@ export default {
     text-align: center;
     margin: 1rem 0rem;
   }
-  .mark_input{
+  .mark_input {
     padding: 1rem;
-    input{
+    input {
       height: 3rem;
-      line-height:3rem;
-      width:100%;
-      border:1px solid #eee;
+      line-height: 3rem;
+      width: 100%;
+      border: 1px solid #eee;
     }
   }
-  .user_list,.mark_list{
+  .user_list,
+  .mark_list {
     display: flex;
     flex-wrap: wrap;
     padding: 0.5rem;
     li {
       width: 25%;
       padding: 0.5rem;
-      box-sizing: border-box; 
+      box-sizing: border-box;
       span {
         display: block;
         width: 100%;
@@ -186,11 +158,11 @@ export default {
       }
     }
   }
-  li.active{
-    span{
-        background: red;                 
-        border: 1px solid red;
-        color:#fff;
+  li.active {
+    span {
+      background: red;
+      border: 1px solid red;
+      color: #fff;
     }
   }
 }
@@ -204,12 +176,12 @@ export default {
   border-radius: 50%;
   background: red;
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   span {
     display: block;
-    width: 2rem;
-    margin: 0 auto;
-    position: relative;
-    top: 1.5rem;
+    width: 3rem;
   }
 }
 </style>

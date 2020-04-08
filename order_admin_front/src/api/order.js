@@ -14,6 +14,10 @@ const ORDER_API = {
   editorder: {
     method: 'post',
     url: '/order/edit'
+  },
+  showDetail: {
+    method: 'post',
+    url: '/detail/findAllPaging'
   }
 }
 

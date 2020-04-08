@@ -19,7 +19,7 @@
         align="center"
       >
         <template slot-scope="scope">
-          <span>{{ scope.row.number }}</span>
+          <span>{{ scope.row.number }}人</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -27,12 +27,29 @@
         align="center"
       >
         <template slot-scope="scope">
-          <span>{{ scope.row.number }}</span>
+          <span>{{ scope.row.mark }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="添加时间"
+        label="菜品总数量"
         align="center"
+      >
+        <template slot-scope="scope">
+          <span>{{ scope.row.total_num }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="总价格"
+        align="center"
+      >
+        <template slot-scope="scope">
+          <span>{{ scope.row.total_price }}元</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="下单时间"
+        align="center"
+        width="200px"
       >
         <template slot-scope="scope">
           <i class="el-icon-time" />
@@ -40,12 +57,12 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="审核状态"
+        label="确认订单"
         align="center"
       >
         <template slot-scope="scope">
           <img
-            v-if="scope.row.status === 1"
+            v-if="scope.row.order_status === 1"
             src="../../assets/yes.gif"
             style="cursor: pointer;"
           >
@@ -56,12 +73,33 @@
           >
         </template>
       </el-table-column>
-      <el-table-column v-if="checkPermission(['admin'])" label="操作" align="center">
+      <el-table-column
+        label="是否支付"
+        align="center"
+      >
+        <template slot-scope="scope">
+          <img
+            v-if="scope.row.pay_status === 1"
+            src="../../assets/yes.gif"
+            style="cursor: pointer;"
+          >
+          <img
+            v-else
+            src="../../assets/no.gif"
+            style="cursor: pointer;"
+          >
+        </template>
+      </el-table-column>
+      <el-table-column v-if="checkPermission(['admin'])" label="操作" align="center" width="250px">
         <template slot-scope="scope">
           <el-button
             size="mini"
             @click="handleEdit(scope.$index, scope.row)"
           >编辑</el-button>
+          <el-button
+            size="mini"
+            @click="handleShow(scope.$index, scope.row)"
+          >查看详情</el-button>
           <el-button
             size="mini"
             type="danger"
@@ -86,7 +124,7 @@
           <el-input v-model="editorderInfo.number" placeholder="请输入人数" clearable />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="editorderInfo.note" placeholder="请输入备注" clearable />
+          <el-input v-model="editorderInfo.mark" placeholder="请输入备注" clearable />
         </el-form-item>
         <el-form-item label="下单时间">
           <el-date-picker v-model="displayTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间" />
@@ -160,6 +198,7 @@ export default {
         page: this.pagination.page,
         size: this.pagination.limit
       }).then((res) => {
+        console.log(res)
         const { list, total } = res.data
         this.tableData = list
         this.pagination.total = total
@@ -177,6 +216,12 @@ export default {
         this.editorderInfo.addtime = addtime
         this.dialogeditVisible = true
       })
+    },
+    handleShow(index, row) {
+      console.log(row)
+      // this.$request.showDetail({  }).then((res) => {
+      //   console.log(res)
+      // })
     },
     handleDelete(index, row) {
       this.orderId = row._id

@@ -73,7 +73,7 @@
       :limit.sync="pagination.limit"
       @pagination="getProdectList"
     />
-    <el-dialog title="提示" :visible.sync="dialsogdelArtVisible" width="30%">
+    <el-dialog title="提示" :visible.sync="dialogdelArtVisible" width="30%">
       <span>确定删除该菜品吗</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogdelArtVisible = false">取 消</el-button>

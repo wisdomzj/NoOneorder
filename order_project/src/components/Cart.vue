@@ -5,10 +5,10 @@
         <h2>购物车</h2>
         <div class="p_number">
           <div class="p_number_left">
-            <p>用餐人数:{{orderinfo.number}}人</p>
-            <p>备注:<span v-if="!orderinfo.note">无</span><span v-if="orderinfo.note">{{orderinfo.note}}</span></p>
+            <p>用餐人数:{{info.number}}人</p>
+            <p>备注:<span v-if="!info.mark">无</span><span v-if="info.mark">{{info.mark}}</span></p>
           </div>
-          <router-link to="/editinfo">
+          <router-link to="/info">
             <div class="p_number_right">
               <img src="../assets/img/edit.png" />
               <p>修改</p>
@@ -22,9 +22,9 @@
       </div>
       <div class="cart_list">
         <ul>
-          <li class="item" v-for="(item,index) in list" :key="index">
+          <li class="item" v-for="(item,index) in cartList" :key="index">
             <div class="left_food">
-              <img :src="websiteUrl+item.img_url" />
+              <img :src="item.img_url" />
               <div class="food_info">
                 <p>{{item.title}}</p>
                 <p class="price">¥{{item.price}}</p>
@@ -34,7 +34,7 @@
               <div class="cart_num">
                 <div class="input_left" @click="rednum(item,index)">-</div>
                 <div class="input_center">
-                  <input type="text" readonl  y="readonly" v-model="item.num" name="num" id="num" />
+                  <input type="text" readonly="readonly" v-model="item.num" />
                 </div>
                 <div class="input_right" @click="addnum(item)">+</div>
               </div>
@@ -85,14 +85,14 @@
         </div>
       </div>
     </div>
-    <v-navfooter></v-navfooter>
+    <NavFooter />
     <router-link to="/home">
       <div id="footer_book" class="footer_book">
         <img src="../assets/img/menu.png" />
         <p>菜单</p>
       </div>
     </router-link>
-    <div id="footer_cart" class="footer_cart">
+    <div id="footer_cart" class="footer_cart" @click="order">
       <img src="../assets/img/doorder.png" />
       <p>下单</p>
     </div>
@@ -100,106 +100,89 @@
 </template>
 
 <script>
-import NavFooter from "./common/NavFooter.vue";
-import Config from "../model/config";
-import Storage from '../model/storage';
+import NavFooter from "./common/NavFooter.vue"
 
 export default {
+  components: { NavFooter },
   data() {
     return {
-      websiteUrl: Config.url,
-      list: [],
-      allPrice:0,
-      totalNum:0,
-      orderinfo:''
-    };
-  },
-  sockets:{
-    cartsync(){
-      this.getCartData();
+      cartList: [],
+      allPrice: 0,
+      totalNum: 0,
+      info: {}
     }
+  },
+  created() {
+    this.getCartData()
+    this.getInfo()
   },
   methods: {
     getCartData() {
-      let deskid = Storage.get("deskid");
-      let api = this.websiteUrl+"api/cartList?id="+deskid;
-      this.$http.get(api).then(
-        res => {
-          this.list = res.body.result;
-          this.getTotalResult();
-        },
-        err => {
-          console.log(err);
-        }
-      );
+      const desk_id = 'a11'
+      this.$request.cartList({ desk_id }).then((res)=>{
+        const { list } = res.data
+        this.cartList = list
+        this.getTotalResult()
+      })
     },
-    rednum(item, key) {  
-      let pid = item.p_id;
-      let num = item.num;
-      let deskid = Storage.get("deskid");
-      let api = this.websiteUrl+"api/redcartNum?id="+deskid+"&pid="+pid+"&num="+num;
-      this.$http.get(api).then(
-        res => {
-          this.getTotalResult();
-          this.$socket.emit("cartsync","cartsync");
-        },
-        err => {
-          console.log(err);
+    getInfo(){
+      const desk_id = 'a11'
+      this.$request.showInfo({ desk_id }).then((res)=>{
+        const { result } = res
+        this.info = result 
+      })
+    },
+    order(){
+      const desk_id = 'a11'
+      this.$request.addOrder({
+        desk_id,
+        number: this.info.number,
+        mark: this.info.mark,
+        items: JSON.stringify(this.cartList),
+        total_num: this.totalNum,
+        total_price: this.allPrice,
+        updatetime: new Date(),
+        addtime: new Date(),
+        pay_status: 0,
+        order_status: 0 
+      }).then((res)=>{
+        if(res.msg === 'success'){
+          this.$router.push({ path: 'order' })
         }
-      );
-      if (item.num == 1) {
-        this.list.splice(key, 1);
-      } else {
-        --item.num;
-      }
+      })
+    },  
+    rednum(item) {  
+      const desk_id = 'a11'
+      const { p_id, num } = item 
+      item.num = item.num <=0 ? 0 : --item.num
+      this.$request.reduceCount({ desk_id, p_id, num }).then((res)=>{
+        if(res.result.nModified || res.result.deletedCount){
+          this.getCartData()
+        }
+      })
     },
     addnum(item) {
-      let pid = item.p_id;
-      let num = item.num;
-      let deskid = Storage.get("deskid");
-      let api = this.websiteUrl+"api/addcartNum?id="+deskid+"&pid="+pid+"&num="+num;
-      this.$http.get(api).then(
-        res => {
-          this.getTotalResult();
-          this.$socket.emit("cartsync","cartsync");
-        },
-        err => {
-          console.log(err);
+      const desk_id = 'a11'
+      const { p_id, num } = item
+      item.num = item.num >=10 ? 10 : ++item.num
+      this.$request.addCount({ desk_id, p_id, num }).then((res)=>{
+        if(res.result.nModified){
+          this.getCartData()
         }
-      );
-      ++item.num;
+      })
     },
     getTotalResult(){    
-        let allPrice = 0;
-        let totalNum = 0;
-        for(let i=0;i<this.list.length;i++){
-            allPrice += parseFloat(this.list[i].price*this.list[i].num);
-            totalNum += this.list[i].num; 
-        } 
-        this.allPrice = allPrice;
-        this.totalNum = totalNum;
-    },
-    getorderInfo(){
-      let deskid = Storage.get("deskid");
-      let api = this.websiteUrl+"api/selorderinfo?id="+deskid;
-      this.$http.get(api).then(
-        res => {
-          this.orderinfo = res.body.result;
-        },
-        err => {
-          console.log(err);
-        }
-      );
+      let allPrice = 0
+      let totalNum = 0
+      for(let i=0; i<this.cartList.length; i++){
+        allPrice += parseFloat(this.cartList[i].price * this.cartList[i].num)
+        totalNum += this.cartList[i].num
+      } 
+      this.allPrice = allPrice
+      this.totalNum = totalNum
     }
-  },
-  mounted() {
-    this.getCartData();
-    this.getorderInfo();
-  },
-  components: {
-    "v-navfooter": NavFooter
   }
-};
+}
 </script>
 
 <style lang="scss">

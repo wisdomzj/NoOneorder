@@ -7,16 +7,22 @@
       </div>
       <div class="hlist">
         <img src="../assets/img/caidan.png" />
-        <p>点过的菜</p>
+        <p>精品榜</p>
       </div>
       <div class="hlist">
         <img src="../assets/img/sousuo.png" />
-        <p>搜你喜欢</p>
+        <p>主打菜</p>
       </div>
     </header>
     <aside class="left_cate" id="left_cate">
       <ul>
-        <li v-for="(item,index) in list" :key="index" @click="changeList(index)">{{item.title}}</li>
+        <li
+          v-for="(item, index) in DataList"
+          :key="index"
+          @click="_changeList(index)"
+        >
+          {{ item.title }}
+        </li>
       </ul>
 
       <div id="nav_cate" class="nav_cate">
@@ -26,15 +32,15 @@
     </aside>
 
     <div class="content">
-      <div class="item" v-for="(item,index) in list" :key="index">
-        <h3 class="item_cate">{{item.title}}</h3>
+      <div class="item" v-for="(item, index) in DataList" :key="index">
+        <h3 class="item_cate">{{ item.title }}</h3>
         <ul class="item_list">
-          <li v-for="(item,index) in item.items" :key="index">
+          <li v-for="(item, index) in item.list" :key="index">
             <div class="inner">
-              <router-link :to="'/pcontent/'+item._id">
-                <img :src="websiteUrl+item.img_url" />
-                <p class="title">{{item.title}}</p>
-                <p class="price">{{item.price}}</p>
+              <router-link :to="`/product/${item._id}`">
+                <img :src="item.img_url" />
+                <p class="title">{{ item.title }}</p>
+                <p class="price">价格：{{ item.price }}元</p>
               </router-link>
             </div>
           </li>
@@ -44,60 +50,58 @@
 
     <div class="bg" id="bg"></div>
 
-    <v-NavFooter></v-NavFooter>
+    <NavFooter />
+
     <router-link to="/cart">
       <div id="footer_cart" class="footer_cart">
         <img src="../assets/img/cart.png" />
         <p>购物车</p>
-        <span class="num" v-if="cartNum">{{cartNum}}</span>
+        <span class="num" v-if="cartNum">{{ cartNum }}</span>
       </div>
     </router-link>
   </div>
 </template>
 
 <script>
-import NavFooter from "./common/NavFooter.vue";
-import Config from "../model/config";
-import Storage from '../model/storage';
+import NavFooter from "./common/NavFooter.vue"
 
 export default {
+  components: {
+    NavFooter,
+  },
   data() {
     return {
-      list: "",
-      cartNum:0,
-      websiteUrl: Config.url,
-    };
-  },
-  sockets:{
-    cartsync(){
-      this.getCartCount();
+      DataList: [],
+      cartNum: 0,
     }
+  },
+  mounted() {
+    this._asideDomInit()
+    this.requestData()
+    this.getCartCount()
   },
   methods: {
     requestData() {
-      let api = this.websiteUrl + "api/proList";
-      this.$http.get(api).then(
-        res => {
-          this.list = res.body.result;
-        },
-        err => {
-          if (err) return;
-        }
-      );
+      this.$request.categoryFindAll({}).then((res)=>{
+        const { result } = res
+        this.DataList = result
+      })
     },
-    getCartCount(){
-      let deskid = Storage.get("deskid");
-      let api = this.websiteUrl + "api/cartCount?id="+deskid;
-      this.$http.get(api).then(
-        res => {
-          this.cartNum = res.body.result;
-        },
-        err => {
-          if (err) return;
-        }
-      );
+    getCartCount() {
+      const desk_id = 'a11'
+      this.$request.cartList({ desk_id }).then((res)=>{
+        this.cartNum = res.data.list.length
+      })
     },
-    asideDomInit() {
+    _changeList(key) {
+      let itemCatesDom = document.querySelectorAll(".item_cate");
+      document.documentElement.scrollTop = itemCatesDom[key].offsetTop;
+      let leftCate = document.getElementById("left_cate");
+      let bg = document.getElementById("bg");
+      leftCate.style.transform = "translate(-100%,0)";
+      bg.style.display = "none";
+    },
+    _asideDomInit() {
       let navCate = document.getElementById("nav_cate");
       let leftCate = document.getElementById("left_cate");
       let bg = document.getElementById("bg");
@@ -110,29 +114,10 @@ export default {
         } else {
           flag = true;
           leftCate.style.transform = "translate(-100%,0)";
-
           bg.style.display = "none";
         }
-      };
-    },
-    changeList(key) {
-      var itemCatesDom = document.querySelectorAll('.item_cate');
-      document.documentElement.scrollTop = itemCatesDom[key].offsetTop;
-      //分类
-      var leftCate = document.getElementById('left_cate');
-      //背景
-      var bg = document.getElementById('bg');
-      leftCate.style.transform = 'translate(-100%,0)';
-      bg.style.display = 'none';
+      }
     }
-  },
-  mounted() {
-    this.asideDomInit();
-    this.requestData();
-    this.getCartCount();
-  },
-  components: {
-    "v-NavFooter": NavFooter
   }
 };
 </script>

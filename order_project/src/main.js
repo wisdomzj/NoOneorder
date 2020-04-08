@@ -1,30 +1,14 @@
-import Vue from 'vue';
-import App from './App.vue';
-import router from './router';
-import './assets/css/basic.scss';
-import Vueresource from 'vue-resource';
-import VueSocketio from 'vue-socket.io';
-import Storage from './model/storage';
-import Http from './server/http'
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import http from '@/utils/http'
+import './assets/css/basic.scss'
 
-Vue.prototype.$Http = Http
+Vue.prototype.$request = http
 
-let deskid = location.hash.split("=")[1];
-Storage.set("deskid",deskid);
-
-Vue.use(Vueresource);
-Vue.use(new VueSocketio({
-  debug: true,
-  connection: 'http://localhost:3000?deskid='+deskid,
-}))
+Vue.config.productionTip = false
 
 new Vue({
-  el: '#app',
   router,
-  sockets: {
-    connect: function () {
-      console.log("连接服务器成功");
-    },
-  },
-  render: h => h(App)
-})
+  render: h => h(App),
+}).$mount('#app')

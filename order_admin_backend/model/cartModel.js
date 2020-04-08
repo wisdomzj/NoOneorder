@@ -2,12 +2,12 @@ const mongoose = require('mongoose')
 
 let cartSchema = mongoose.Schema({
     __v: { type: Number, select: false },
-    desk_id:{type:String},
-    title:{type:String},
-    p_id:{type:String},
-    img_url:{type:String},
-    price:{type:Number},
-    num:{type:Number}
+    desk_id:{type:String}, // 桌号
+    title:{type:String}, // 菜品名称
+    p_id:{type:String}, // 菜品id
+    img_url:{type:String}, // 菜品封面图
+    price:{type:Number}, // 菜品价格
+    num:{type:Number} // 菜品数量
 })
 
 let cartModel = mongoose.model('carts',cartSchema,'cart')

@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "alipay-mobile": "^3.0.9",
+    "assert": "^2.0.0",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-json-error": "^3.1.2",
